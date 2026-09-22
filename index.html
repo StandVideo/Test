@@ -4,20 +4,25 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Rajab PS4 13.xx Jailbreak</title>
+    <title>Stand PS4 Jailbreak</title>
+
     <style>
         html,
         body {
             margin: 0;
             padding: 0;
-            min-height: 100%;
-            background: #0b0d10;
+            width: 100%;
+            height: 100%;
+            background-color: #0b0d10;
+            background-image: url("./BG.jpg");
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
             color: #c8ced8;
             font: 15px/1.45 "Segoe UI", system-ui, sans-serif;
             overflow: hidden;
         }
 
-        /* ---------- unsupported chip (top-left) ---------- */
         #fwchip {
             position: fixed;
             top: 14px;
@@ -65,7 +70,6 @@
             margin-top: 2px;
         }
 
-        /* ---------- stage (ring + image + number) ---------- */
         #stage {
             position: fixed;
             inset: 0;
@@ -74,14 +78,11 @@
             justify-content: center;
             flex-direction: column;
             padding-bottom: 6vmin;
-            /* nudges the stack up a touch */
         }
 
         #stage h1 {
-            /* font-size: clamp(16px, 3.2vmin, 30px); */
             font-weight: 700;
-            /* letter-spacing: .12em; */
-            margin: 10 0 0 10;
+            margin: 10px 0 0 10px;
             color: #eff4f1;
         }
 
@@ -91,14 +92,12 @@
             height: min(78vmin, 620px);
         }
 
-        /* the SVG ring sits behind the image */
         #ring {
             position: absolute;
             inset: 0;
             width: 100%;
             height: 100%;
             transform: rotate(-90deg);
-            /* start at 12 o'clock */
             pointer-events: none;
         }
 
@@ -124,7 +123,7 @@
             stroke: #7fd0a0;
         }
 
-        /* the logo image sits inside the ring */
+        /* ICÔNE : toujours visible à 100 % */
         #logo {
             position: absolute;
             top: 50%;
@@ -134,16 +133,18 @@
             transform: translate(-50%, -50%);
             object-fit: contain;
             border-radius: 50%;
-            transition: opacity .3s;
             opacity: 1;
+            transition: opacity .3s;
             user-select: none;
             -webkit-user-drag: none;
         }
 
-        /* while loading: dim so the percentage is readable */
-        body.running #logo {
-            opacity: .35;
-        }
+        /*
+         * Pas de transparence pendant le chargement.
+         * L'ancienne règle :
+         * body.running #logo { opacity: .35; }
+         * a été supprimée.
+         */
 
         body.done #logo {
             opacity: 1;
@@ -153,7 +154,6 @@
             opacity: .45;
         }
 
-        /* ---------- big percentage, BELOW the ring ---------- */
         #pct {
             margin-top: 18px;
             font-size: clamp(56px, 14vmin, 150px);
@@ -176,7 +176,6 @@
             opacity: 0;
         }
 
-        /* ---------- final status, further below the percentage ---------- */
         #final {
             margin-top: 6px;
             text-align: center;
@@ -203,7 +202,6 @@
             color: #d08a7f;
         }
 
-        /* ---------- hidden jb.js compatibility nodes ---------- */
         #wrap {
             display: none;
         }
@@ -221,7 +219,6 @@
             display: none;
         }
 
-        /* ---------- ?log=1 overrides ---------- */
         body.log #stage {
             display: none;
         }
@@ -269,7 +266,7 @@
 </head>
 
 <body>
-    <!-- unsupported firmware chip (top-left) -->
+
     <div id="fwchip">
         <div class="dot"></div>
         <div class="txt">
@@ -278,13 +275,18 @@
         </div>
     </div>
 
-    <!-- main visual stage -->
     <div id="stage">
-        <h1>Rajab PS4 13.xx Jailbreak</h1>
-        <h4>Thanks To Raw Game And SiSTRo</h4>
-        <h1>GoldHen Latest Version 12.4b18.12 released date 21/09/2026</h1>
+
+        <h1>Stand PS4 Jailbreak</h1>
+
+        <h4></h4>
+
+        <h1>GoldHen 12.4b18.12 released date 21/09/2026</h1>
+
         <div id="ringwrap">
+
             <svg id="ring" viewBox="0 0 200 200" aria-hidden="true">
+
                 <defs>
                     <linearGradient id="ringgrad" x1="0" y1="0" x2="1" y2="1">
                         <stop offset="0%" stop-color="#4fa3d8" />
@@ -292,121 +294,394 @@
                         <stop offset="100%" stop-color="#7fd0a0" />
                     </linearGradient>
                 </defs>
-                <circle class="track" cx="100" cy="100" r="88" />
-                <circle class="fill" cx="100" cy="100" r="88" />
+
+                <circle
+                    class="track"
+                    cx="100"
+                    cy="100"
+                    r="88"
+                />
+
+                <circle
+                    class="fill"
+                    cx="100"
+                    cy="100"
+                    r="88"
+                />
+
             </svg>
-            <img id="logo" src="rajab-logo.jpg" alt="">
+
+            <img id="logo" src="avatar.png" alt="">
+
         </div>
-        <div id="pct">0<span class="unit">%</span></div>
+
+        <div id="pct">
+            0<span class="unit">%</span>
+        </div>
+
         <div id="final"></div>
+
     </div>
 
-    <!-- jb.js compatibility nodes (kept, hidden unless ?log=1) -->
     <div id="spin"></div>
     <div id="msg"></div>
+
     <div id="wrap">
         <div id="state"></div>
         <div id="out"></div>
     </div>
 
+
     <script>
         (function () {
+
             "use strict";
 
-            // ---------------------------------------------------------------
-            //  Load whatever you want to run once the cache is ready.
-            //  Replace this with your jb.js injection or your real go() call.
-            // ---------------------------------------------------------------
             var started = false;
-            function start() {
-                if (started) return;
-                started = true;
-                console.log("[appcache] starting payload");
-                // e.g.:
-                // var s = document.createElement("script");
-                // s.type = "module";
-                // s.src  = "jb.js?v=10";
-                // document.body.appendChild(s);
+
+            var pct = document.getElementById("pct");
+            var ring = document.querySelector("#ring .fill");
+            var final = document.getElementById("final");
+
+            /*
+             * Cercle de progression
+             */
+            var radius = 88;
+            var circumference = 2 * Math.PI * radius;
+
+            ring.style.strokeDasharray = circumference;
+            ring.style.strokeDashoffset = circumference;
+
+
+            /*
+             * Mise à jour du pourcentage
+             */
+            function setProgress(value) {
+
+                value = Math.max(0, Math.min(100, value));
+
+                pct.innerHTML =
+                    Math.round(value) +
+                    '<span class="unit">%</span>';
+
+                var offset =
+                    circumference -
+                    (value / 100) * circumference;
+
+                ring.style.strokeDashoffset = offset;
+
+                document.body.classList.add("running");
             }
 
-            // ---------------------------------------------------------------
-            //  Cache gate
-            // ---------------------------------------------------------------
+
+            /*
+             * Lancement de jb.js
+             */
+            function start() {
+
+                if (started)
+                    return;
+
+                started = true;
+
+                console.log("[appcache] starting jb.js");
+
+                var s = document.createElement("script");
+
+                s.src = "jb.js";
+
+                s.onload = function () {
+                    console.log("[appcache] jb.js loaded");
+                };
+
+                s.onerror = function () {
+                    console.log("[appcache] ERROR loading jb.js");
+                };
+
+                document.body.appendChild(s);
+            }
+
+
+            /*
+             * AppCache
+             */
             var ac = window.applicationCache;
 
-            // No appcache support, or no manifest attribute -> just run.
-            if (!ac || !document.documentElement.hasAttribute("manifest")) {
-                console.log("[appcache] not supported, running directly");
+
+            /*
+             * Pas d'AppCache
+             */
+            if (
+                !ac ||
+                !document.documentElement.hasAttribute("manifest")
+            ) {
+
+                console.log(
+                    "[appcache] not supported, running directly"
+                );
+
+                setProgress(100);
                 start();
+
                 return;
             }
 
-            // Offline -> whatever is cached is what we have, run it.
+
+            /*
+             * Hors ligne
+             */
             if (!navigator.onLine) {
-                console.log("[appcache] offline, running from cache");
+
+                console.log(
+                    "[appcache] offline, running from cache"
+                );
+
+                setProgress(100);
                 start();
+
                 return;
             }
 
-            // Already cached and up to date -> run.
+
+            /*
+             * Déjà en cache
+             */
             if (ac.status === ac.IDLE) {
-                console.log("[appcache] IDLE (cached), running");
+
+                console.log(
+                    "[appcache] IDLE (cached), running"
+                );
+
+                setProgress(100);
                 start();
+
                 return;
             }
 
-            // An update is ready in the cache -> swap it in and run.
+
+            /*
+             * Mise à jour déjà prête
+             */
             if (ac.status === ac.UPDATEREADY) {
-                try { ac.swapCache(); } catch (e) { }
-                console.log("[appcache] UPDATEREADY, swapped and running");
+
+                try {
+                    ac.swapCache();
+                } catch (e) {}
+
+                console.log(
+                    "[appcache] UPDATEREADY, swapped and running"
+                );
+
+                setProgress(100);
                 start();
+
                 return;
             }
 
-            // Otherwise we are checking/downloading. Wire the events and wait.
-            ac.addEventListener("checking", function () {
-                console.log("[appcache] checking");
-            }, false);
 
-            ac.addEventListener("downloading", function () {
-                console.log("[appcache] downloading (first run or new version)");
-            }, false);
+            /*
+             * Vérification
+             */
+            ac.addEventListener(
+                "checking",
+                function () {
 
-            ac.addEventListener("progress", function (e) {
-                if (e && e.total)
-                    console.log("[appcache] progress " + e.loaded + "/" + e.total);
-            }, false);
+                    console.log(
+                        "[appcache] checking"
+                    );
 
-            ac.addEventListener("cached", function () {
-                console.log("[appcache] cached OK");
-                start();
-            }, false);
+                },
+                false
+            );
 
-            ac.addEventListener("noupdate", function () {
-                console.log("[appcache] noupdate (already cached)");
-                start();
-            }, false);
 
-            ac.addEventListener("updateready", function () {
-                console.log("[appcache] updateready");
-                try { ac.swapCache(); } catch (e) { }
-                start();
-            }, false);
+            /*
+             * Téléchargement
+             */
+            ac.addEventListener(
+                "downloading",
+                function () {
 
-            ac.addEventListener("error", function () {
-                // A listed file is missing, the manifest is malformed, or the
-                // server is not sending text/cache-manifest. AppCache gives no
-                // URL here -- check the Network tab for the 404.
-                console.log("[appcache] ERROR - check manifest paths and MIME type");
-                start();
-            }, false);
+                    console.log(
+                        "[appcache] downloading"
+                    );
 
-            ac.addEventListener("obsolete", function () {
-                console.log("[appcache] obsolete");
-                start();
-            }, false);
+                    setProgress(0);
+
+                },
+                false
+            );
+
+
+            /*
+             * PROGRESSION
+             */
+            ac.addEventListener(
+                "progress",
+                function (e) {
+
+                    if (
+                        e &&
+                        e.total > 0
+                    ) {
+
+                        var percent =
+                            (e.loaded / e.total) * 100;
+
+                        console.log(
+                            "[appcache] progress " +
+                            e.loaded +
+                            "/" +
+                            e.total +
+                            " = " +
+                            Math.round(percent) +
+                            "%"
+                        );
+
+                        setProgress(percent);
+                    }
+
+                },
+                false
+            );
+
+
+            /*
+             * CACHE TERMINÉ
+             */
+            ac.addEventListener(
+                "cached",
+                function () {
+
+                    console.log(
+                        "[appcache] cached OK"
+                    );
+
+                    setProgress(100);
+
+                    document.body.classList.remove("running");
+                    document.body.classList.add("done");
+
+                    final.textContent = "READY";
+
+                    setTimeout(
+                        function () {
+                            start();
+                        },
+                        400
+                    );
+
+                },
+                false
+            );
+
+
+            /*
+             * Pas de nouvelle version
+             */
+            ac.addEventListener(
+                "noupdate",
+                function () {
+
+                    console.log(
+                        "[appcache] noupdate"
+                    );
+
+                    setProgress(100);
+
+                    document.body.classList.remove("running");
+                    document.body.classList.add("done");
+
+                    final.textContent = "READY";
+
+                    setTimeout(
+                        function () {
+                            start();
+                        },
+                        400
+                    );
+
+                },
+                false
+            );
+
+
+            /*
+             * Nouvelle version prête
+             */
+            ac.addEventListener(
+                "updateready",
+                function () {
+
+                    console.log(
+                        "[appcache] updateready"
+                    );
+
+                    try {
+                        ac.swapCache();
+                    } catch (e) {}
+
+                    setProgress(100);
+
+                    document.body.classList.remove("running");
+                    document.body.classList.add("done");
+
+                    final.textContent = "READY";
+
+                    setTimeout(
+                        function () {
+                            start();
+                        },
+                        400
+                    );
+
+                },
+                false
+            );
+
+
+            /*
+             * Erreur AppCache
+             */
+            ac.addEventListener(
+                "error",
+                function () {
+
+                    console.log(
+                        "[appcache] ERROR - check manifest paths and MIME type"
+                    );
+
+                    document.body.classList.remove("running");
+                    document.body.classList.add("fail");
+
+                    final.textContent = "CACHE ERROR";
+
+                    start();
+
+                },
+                false
+            );
+
+
+            /*
+             * AppCache obsolète
+             */
+            ac.addEventListener(
+                "obsolete",
+                function () {
+
+                    console.log(
+                        "[appcache] obsolete"
+                    );
+
+                    start();
+
+                },
+                false
+            );
+
         })();
     </script>
-</body>
 
+</body>
 </html>
