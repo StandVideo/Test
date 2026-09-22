@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en" manifest="cache.appcache">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Stand PS4 Jailbreak</title>
+    <style>
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    background-color: #0b0d10;
+    background-image: url("./BG.jpg");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    color: #c8ced8;
+    font: 15px/1.45 "Segoe UI", system-ui, sans-serif;
+    overflow: hidden;
+}
+
+        /* ---------- unsupported chip (top-left) ---------- */
+        #fwchip {
+            position: fixed;
+            top: 14px;
+            left: 14px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: #1a0f10;
+            border: 1px solid #5c2a2a;
+            border-left: 4px solid #d08a7f;
+            border-radius: 8px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, .55);
+            z-index: 10;
+            max-width: 60vw;
+        }
+
+        #fwchip.on {
+            display: flex;
+        }
+
+        #fwchip .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #d08a7f;
+            box-shadow: 0 0 10px #d08a7f;
+            flex: 0 0 auto;
+        }
+
+        #fwchip .txt {
+            line-height: 1.25;
+        }
+
+        #fwchip .txt .t1 {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: .12em;
+            color: #f0c0b6;
+        }
+
+        #fwchip .txt .t2 {
+            font-size: 11px;
+            color: #a07a72;
+            margin-top: 2px;
+        }
+
+        /* ---------- stage (ring + image + number) ---------- */
+        #stage {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding-bottom: 6vmin;
+            /* nudges the stack up a touch */
+        }
+
+        #stage h1 {
+            /* font-size: clamp(16px, 3.2vmin, 30px); */
+            font-weight: 700;
+            /* letter-spacing: .12em; */
+            margin: 10 0 0 10;
+            color: #eff4f1;
+        }
+
+        #ringwrap {
+            position: relative;
+            width: min(78vmin, 620px);
+            height: min(78vmin, 620px);
+        }
+
+        /* the SVG ring sits behind the image */
+        #ring {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+            /* start at 12 o'clock */
+            pointer-events: none;
+        }
+
+        #ring .track {
+            fill: none;
+            stroke: #1b2029;
+            stroke-width: 10;
+        }
+
+        #ring .fill {
+            fill: none;
+            stroke: url(#ringgrad);
+            stroke-width: 10;
+            stroke-linecap: round;
+            transition: stroke-dashoffset .35s ease-out, stroke .3s;
+        }
+
+        #ring.fail .fill {
+            stroke: #d08a7f;
+        }
+
+        #ring.done .fill {
+            stroke: #7fd0a0;
+        }
+
+        /* the logo image sits inside the ring */
+        #logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 62%;
+            height: 62%;
+            transform: translate(-50%, -50%);
+            object-fit: contain;
+            border-radius: 50%;
+            transition: opacity .3s;
+            opacity: 1;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        /* while loading: dim so the percentage is readable */
+        body.running #logo {
+            opacity: .35;
+        }
+
+        body.done #logo {
+            opacity: 1;
+        }
+
+        body.fail #logo {
+            opacity: .45;
+        }
+
+        /* ---------- big percentage, BELOW the ring ---------- */
+        #pct {
+            margin-top: 18px;
+            font-size: clamp(56px, 14vmin, 150px);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: #e6ebf2;
+            text-shadow: 0 2px 18px rgba(0, 0, 0, .75);
+            line-height: 1;
+            transition: opacity .35s;
+        }
+
+        #pct .unit {
+            font-size: .38em;
+            font-weight: 600;
+            margin-left: .08em;
+            color: #9fb3d0;
+        }
+
+        body.done #pct {
+            opacity: 0;
+        }
+
+        /* ---------- final status, further below the percentage ---------- */
+        #final {
+            margin-top: 6px;
+            text-align: center;
+            font-size: clamp(16px, 3.2vmin, 30px);
+            font-weight: 700;
+            letter-spacing: .12em;
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity .4s .15s, transform .4s .15s;
+            pointer-events: none;
+        }
+
+        body.done #final,
+        body.fail #final {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        body.done #final {
+            color: #7fd0a0;
+        }
+
+        body.fail #final {
+            color: #d08a7f;
+        }
+
+        /* ---------- hidden jb.js compatibility nodes ---------- */
+        #wrap {
+            display: none;
+        }
+
+        #state,
+        #out {
+            display: none;
+        }
+
+        #spin {
+            display: none;
+        }
+
+        #msg {
+            display: none;
+        }
+
+        /* ---------- ?log=1 overrides ---------- */
+        body.log #stage {
+            display: none;
+        }
+
+        body.log #fwchip {
+            display: none;
+        }
+
+        body.log #wrap {
+            display: block;
+            padding: 14px 18px;
+        }
+
+        body.log #state {
+            display: block;
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0 0 8px;
+        }
+
+        body.log #out {
+            display: block;
+            white-space: pre-wrap;
+            font: 12px/1.45 Consolas, monospace;
+            background: #11151b;
+            border: 1px solid #1e2732;
+            border-radius: 5px;
+            padding: 10px 12px;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+
+        .ok {
+            color: #7fd0a0;
+        }
+
+        .bad {
+            color: #d08a7f;
+        }
+
+        .warn {
+            color: #d8c07f;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- unsupported firmware chip (top-left) -->
+    <div id="fwchip">
+        <div class="dot"></div>
+        <div class="txt">
+            <div class="t1">UNSUPPORTED FIRMWARE</div>
+            <div class="t2" id="fwver">firmware unknown</div>
+        </div>
+    </div>
+
+    <!-- main visual stage -->
+    <div id="stage">
+        <h1>Stand PS4 Jailbreak</h1>
+        <h4></h4>
+        <h1>GoldHen 12.4b18.12 released date 21/09/2026</h1>
+        <div id="ringwrap">
+            <svg id="ring" viewBox="0 0 200 200" aria-hidden="true">
+                <defs>
+                    <linearGradient id="ringgrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#4fa3d8" />
+                        <stop offset="55%" stop-color="#8a6ff0" />
+                        <stop offset="100%" stop-color="#7fd0a0" />
+                    </linearGradient>
+                </defs>
+                <circle class="track" cx="100" cy="100" r="88" />
+                <circle class="fill" cx="100" cy="100" r="88" />
+            </svg>
+            <img id="logo" src="avatar.png" alt="">
+        </div>
+        <div id="pct">0<span class="unit">%</span></div>
+        <div id="final"></div>
+    </div>
+
+    <!-- jb.js compatibility nodes (kept, hidden unless ?log=1) -->
+    <div id="spin"></div>
+    <div id="msg"></div>
+    <div id="wrap">
+        <div id="state"></div>
+        <div id="out"></div>
+    </div>
+
+    <script>
+        (function () {
+            "use strict";
+
+            // ---------------------------------------------------------------
+            //  Load whatever you want to run once the cache is ready.
+            //  Replace this with your jb.js injection or your real go() call.
+            // ---------------------------------------------------------------
+            var started = false;
+            function start() {
+                if (started) return;
+                started = true;
+                console.log("[appcache] starting payload");
+                // e.g.:
+                // var s = document.createElement("script");
+                // s.type = "module";
+                // s.src  = "jb.js?v=10";
+                // document.body.appendChild(s);
+            }
+
+            // ---------------------------------------------------------------
+            //  Cache gate
+            // ---------------------------------------------------------------
+            var ac = window.applicationCache;
+
+            // No appcache support, or no manifest attribute -> just run.
+            if (!ac || !document.documentElement.hasAttribute("manifest")) {
+                console.log("[appcache] not supported, running directly");
+                start();
+                return;
+            }
+
+            // Offline -> whatever is cached is what we have, run it.
+            if (!navigator.onLine) {
+                console.log("[appcache] offline, running from cache");
+                start();
+                return;
+            }
+
+            // Already cached and up to date -> run.
+            if (ac.status === ac.IDLE) {
+                console.log("[appcache] IDLE (cached), running");
+                start();
+                return;
+            }
+
+            // An update is ready in the cache -> swap it in and run.
+            if (ac.status === ac.UPDATEREADY) {
+                try { ac.swapCache(); } catch (e) { }
+                console.log("[appcache] UPDATEREADY, swapped and running");
+                start();
+                return;
+            }
+
+            // Otherwise we are checking/downloading. Wire the events and wait.
+            ac.addEventListener("checking", function () {
+                console.log("[appcache] checking");
+            }, false);
+
+            ac.addEventListener("downloading", function () {
+                console.log("[appcache] downloading (first run or new version)");
+            }, false);
+
+            ac.addEventListener("progress", function (e) {
+                if (e && e.total)
+                    console.log("[appcache] progress " + e.loaded + "/" + e.total);
+            }, false);
+
+            ac.addEventListener("cached", function () {
+                console.log("[appcache] cached OK");
+                start();
+            }, false);
+
+            ac.addEventListener("noupdate", function () {
+                console.log("[appcache] noupdate (already cached)");
+                start();
+            }, false);
+
+            ac.addEventListener("updateready", function () {
+                console.log("[appcache] updateready");
+                try { ac.swapCache(); } catch (e) { }
+                start();
+            }, false);
+
+            ac.addEventListener("error", function () {
+                // A listed file is missing, the manifest is malformed, or the
+                // server is not sending text/cache-manifest. AppCache gives no
+                // URL here -- check the Network tab for the 404.
+                console.log("[appcache] ERROR - check manifest paths and MIME type");
+                start();
+            }, false);
+
+            ac.addEventListener("obsolete", function () {
+                console.log("[appcache] obsolete");
+                start();
+            }, false);
+        })();
+    </script>
+</body>
+
+</html>
